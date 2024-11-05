@@ -6,7 +6,6 @@ import logging
 import json
 import requests
 import pandas
-import certifi
 import openpyxl
 import openpyxl.styles as xlstyle
 
@@ -107,15 +106,17 @@ class ZSRQuerier:
                                  timeout=LOOKUP_TIMEOUT)
         response_json = json.loads(response.text)
         response_json = json.loads(response_json["responseData"])["respMap"]
-        lookup_urls = {}
+        lookup_urls: dict[str, dict[str, str | list[str]]] = {}
 
         for key in response_json.keys():
             entry = response_json[key]
-            threat = "" if entry["threatName"] in self.EMPTY_THREATS else entry["threatName"]
+            threat: str = "" if entry["threatName"] in self.EMPTY_THREATS else entry["threatName"]
+            categories: list[str] = entry["zurldblist"]
             lookup_urls[key] = {
-                cache.JsonFields.THREAT: threat
+                cache.JsonFields.THREAT: threat,
+                cache.JsonFields.CATEGORIES: categories
             }
-            self.cache.set(key, threat)
+            self.cache.set(key, threat, categories)
 
         return lookup_urls
 
@@ -130,7 +131,8 @@ class ZSRQuerier:
         for key, value in self.processed_urls.items():
             output.append({
                 "url": key,
-                cache.JsonFields.THREAT: value[cache.JsonFields.THREAT]
+                cache.JsonFields.THREAT: value[cache.JsonFields.THREAT],
+                cache.JsonFields.CATEGORIES: value[cache.JsonFields.CATEGORIES]
             })
 
         with pandas.ExcelWriter(filename, engine="xlsxwriter") as xlwriter:
