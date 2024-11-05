@@ -27,7 +27,15 @@ class ZSRQuerier:
     """
     BATCH_SIZE: int = 90
     ZURL_API: str = "https://sitereview.zscaler.com/api/lookup"
-    EMPTY_THREATS: set = (None, "Not Available")
+    EMPTY_THREATS: set[str | None] = (None, "Not Available")
+    PREBUILT_CATS: tuple[str] = (
+        'GLOBAL_INT_TRUSTED_MIME_HTML',
+        'GLOBAL_INT_GBL_SSL_BYPASS',
+        'GLOBAL_INT_BYPASS_GSB_V2',
+        'GLOBAL_INT_OFC365_ALLOW',
+        'GLOBAL_INT_OFC_SSL_BYPASS',
+        'GLOBAL_INT_OFC365_DEFAULT'
+    )
 
     cache: cache.ZSRCache
     raw_urls: list[str]
@@ -147,10 +155,12 @@ class ZSRQuerier:
             :param list[str] sheet_list: worksheet names to search through
         """
         align_multiline: xlstyle.Alignment = xlstyle.Alignment(wrapText=True)
-        background_fill_malware: xlstyle.PatternFill = (
+        bg_fill_malware: xlstyle.PatternFill = (
             xlstyle.PatternFill(patternType='solid', fgColor=xlstyle.colors.Color(rgb='FFFF00')))
-        background_fill_clean: xlstyle.PatternFill = (
+        bg_fill_clean: xlstyle.PatternFill = (
             xlstyle.PatternFill(patternType='solid', fgColor=xlstyle.colors.Color(rgb='CCFFCC')))
+        bg_fill_prebuilt: xlstyle.PatternFill = (
+            xlstyle.PatternFill(patternType='solid', fgColor=xlstyle.colors.Color(rgb='F79646')))
 
         wb: openpyxl.Workbook = openpyxl.load_workbook(filename=excel)
 
@@ -219,11 +229,19 @@ class ZSRQuerier:
                         entry = entry.rstrip('/')
 
                     threat_name = self.processed_urls[entry][cache.JsonFields.THREAT]
-                    if threat_name == '':
-                        ws.cell(row=row, column=col).fill = background_fill_clean
-                    else:
+                    categories = self.processed_urls[entry][cache.JsonFields.CATEGORIES]
+                    prebuilt: bool = False
+
+                    for cat in categories:
+                        if cat in self.PREBUILT_CATS:
+                            prebuilt = True
+                            break
+
+                    if threat_name != '':
                         ws.cell(row=row, column=col).value = f"{entry}\n\nThreat: {threat_name}"
-                        ws.cell(row=row, column=col).fill = background_fill_malware
+                        ws.cell(row=row, column=col).fill = bg_fill_malware
                         ws.cell(row=row, column=col).alignment = align_multiline
+                    else:
+                        ws.cell(row=row, column=col).fill = bg_fill_prebuilt if prebuilt else bg_fill_clean
 
         wb.save(excel)
