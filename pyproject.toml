@@ -1,0 +1,32 @@
+[build-system]
+requires = [
+    "setuptools>=61.0"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zs_sitereview"
+version = "0.1"
+authors = [
+    {   name="Yaroslav Bondarenko", email="braonle@yandex.ru"   },
+]
+description = "Look up URLs in Zscaler Site Review"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas",
+    "requests",
+    "XlsxWriter",
+    "openpyxl"
+]
+
+[project.urls]
+#Homepage = ""
+#Issues = ""
+
+[tool.setuptools.packages.find]
+where = ["src"]
