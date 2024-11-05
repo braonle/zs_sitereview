@@ -29,12 +29,11 @@ class ZSRQuerier:
     ZURL_API: str = "https://sitereview.zscaler.com/api/lookup"
     EMPTY_THREATS: set[str | None] = (None, "Not Available")
     PREBUILT_CATS: tuple[str] = (
-        'GLOBAL_INT_TRUSTED_MIME_HTML',
         'GLOBAL_INT_GBL_SSL_BYPASS',
-        'GLOBAL_INT_BYPASS_GSB_V2',
-        'GLOBAL_INT_OFC365_ALLOW',
         'GLOBAL_INT_OFC_SSL_BYPASS',
-        'GLOBAL_INT_OFC365_DEFAULT'
+        'GLOBAL_INT_ZOOM',
+        'GLOBAL_INT_RINGCENTRAL',
+        'GLOBAL_INT_LOGMEIN'
     )
 
     cache: cache.ZSRCache
