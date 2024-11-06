@@ -8,6 +8,7 @@ import requests
 import pandas
 import openpyxl
 import openpyxl.styles as xlstyle
+import re
 
 from src import cache
 
@@ -224,11 +225,15 @@ class ZSRQuerier:
                     if entry == "" or entry is None:
                         break
 
-                    if entry.count('/') == 1:
-                        entry = entry.rstrip('/')
+                    # Remove port definitions as it's dropped by Site Review
+                    index = re.sub(":\d+", "", entry)
 
-                    threat_name = self.processed_urls[entry][cache.JsonFields.THREAT]
-                    categories = self.processed_urls[entry][cache.JsonFields.CATEGORIES]
+                    # Remove trailing / if only host name is present (dropped by Site Review)
+                    if index.count('/') == 1:
+                        index = index.rstrip('/')
+
+                    threat_name = self.processed_urls[index][cache.JsonFields.THREAT]
+                    categories = self.processed_urls[index][cache.JsonFields.CATEGORIES]
                     prebuilt: bool = False
 
                     for cat in categories:
