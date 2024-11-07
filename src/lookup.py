@@ -56,37 +56,56 @@ class ZSRQuerier:
             # Remove /n part of the URL
             self.raw_urls = [line.replace("\n", "") for line in file]
 
+    @staticmethod
+    def _clean_url(url: str) -> str:
+        """
+            Remove elements that would be removed by Site Review in order to keep
+            the cache consistent.
+
+            :param str url: URL to have characters removed
+        """
+        # Remove port definitions as it's dropped by Site Review
+        clean_url: str = re.sub(":\d+", "", url)
+        # Remove  trailing # as it's dropped by Site Review
+        clean_url = clean_url.rstrip('#')
+
+        # Remove trailing / if only host name is present (dropped by Site Review)
+        if clean_url.count('/') == 1:
+            clean_url = clean_url.rstrip('/')
+
+        return clean_url
+
     def lookup_urls(self) -> dict[str, dict[str, str | None]]:
         """
              Search the list of URLs from the file or external list.
          """
         # Remove duplicates
         urls = list(set(self.raw_urls.copy()))
+        clean_urls: list[str] = []
         batches: list[list[str]] = []
 
         # Look up URLs in cache
         for url in urls:
-            entry = self.cache.get(url)
+            clean_url = self._clean_url(url)
+            entry = self.cache.get(clean_url)
             if entry is not None:
-                self.processed_urls[url] = entry
+                self.processed_urls[clean_url] = entry
+            else:
+                clean_urls.append(clean_url)
 
         cache_hits: int = len(self.processed_urls)
-        lookups: int = len(urls) - cache_hits
+        lookups: int = len(clean_urls)
 
         # Proceed with lookup only if smth did not hit the cache
-        if cache_hits != len(urls):
-            # Remove cached entries from the lookup
-            for url in self.processed_urls:
-                urls.remove(url)
-
+        if cache_hits != len(clean_urls):
             # Split URLs into batches
-            while len(urls) >= self.BATCH_SIZE:
-                chunk, urls = urls[:self.BATCH_SIZE], urls[self.BATCH_SIZE:]
+            while len(clean_urls) >= self.BATCH_SIZE:
+                chunk, clean_urls = clean_urls[:self.BATCH_SIZE], clean_urls[self.BATCH_SIZE:]
                 batches.append(chunk)
 
             # Append last batch if it is not empty
-            if len(urls) > 0:
-                batches.append(urls)
+            if len(clean_urls) > 0:
+                batches.append(clean_urls)
 
             for batch in batches:
                 lookup = self._lookup_batch(batch)
@@ -110,6 +129,8 @@ class ZSRQuerier:
             "urls": urls
         })
 
+        logging.info("Calling Site Review for %i URLs", len(urls))
+
         response = requests.post(url=self.ZURL_API, headers=headers, data=body,
                                  timeout=LOOKUP_TIMEOUT)
         response_json = json.loads(response.text)
@@ -125,6 +146,8 @@ class ZSRQuerier:
                 cache.JsonFields.CATEGORIES: categories
             }
             self.cache.set(key, threat, categories)
+
+        logging.info("Call results are processed for %i URLs", len(lookup_urls))
 
         return lookup_urls
 
@@ -166,9 +189,12 @@ class ZSRQuerier:
 
         self.raw_urls = []
 
+        logging.info("Building lookup set from spreadsheets")
         for sheet in sheet_list:
             ws = wb[sheet]
             entries_start_row: int = -1
+
+            logging.info("Processing sheet %s", sheet)
 
             # Find the row that is used as the row for first entries in lists
             for row in range(1, EXCEL_ENTRIES_MAX_SEARCH):
@@ -199,9 +225,12 @@ class ZSRQuerier:
 
         self.lookup_urls()
 
+        logging.info("Applying lookup set to spreadsheets")
         for sheet in sheet_list:
             ws = wb[sheet]
             entries_start_row: int = -1
+
+            logging.info("Processing sheet %s", sheet)
 
             # Find the row that is used as the row for first entries in lists
             for row in range(1, EXCEL_ENTRIES_MAX_SEARCH):
@@ -227,13 +256,21 @@ class ZSRQuerier:
 
                     # Remove port definitions as it's dropped by Site Review
                     index = re.sub(":\d+", "", entry)
+                    # Remove  trailing # as it's dropped by Site Review
+                    index = index.rstrip('#')
 
                     # Remove trailing / if only host name is present (dropped by Site Review)
                     if index.count('/') == 1:
                         index = index.rstrip('/')
 
-                    threat_name = self.processed_urls[index][cache.JsonFields.THREAT]
-                    categories = self.processed_urls[index][cache.JsonFields.CATEGORIES]
+                    # If index is not found, drop Excel marking and log the key
+                    index_dict = self.processed_urls.get(index)
+                    if not index_dict:
+                        logging.warning("Key [%s] is not found in the lookup results", index)
+                        continue
+
+                    threat_name = index_dict[cache.JsonFields.THREAT]
+                    categories = index_dict[cache.JsonFields.CATEGORIES]
                     prebuilt: bool = False
 
                     for cat in categories:
