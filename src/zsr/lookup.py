@@ -150,11 +150,12 @@ class ZSRQuerier:
 
         return lookup_urls
 
-    def to_excel(self, filename: str = "out.xlsx") -> None:
+    def to_excel(self, filename: str = "out.xlsx", sheet_name: str = "Data") -> None:
         """
             Export resolved IPs to Excel spreadsheet
 
             :param str filename: path for Excel spreadsheet
+            :param str sheet_name: Excel sheet name
         """
         output: list[dict[str, str]] = []
 
@@ -167,7 +168,7 @@ class ZSRQuerier:
 
         with pandas.ExcelWriter(filename, engine="xlsxwriter") as xlwriter:
             df = pandas.DataFrame(output)
-            df.to_excel(xlwriter, sheet_name="Data", index=False, header=True)
+            df.to_excel(xlwriter, sheet_name=sheet_name, index=False, header=True)
 
     def search_excel(self, excel: str, sheet_list: list[str]) -> None:
         """
