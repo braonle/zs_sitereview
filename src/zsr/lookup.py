@@ -10,7 +10,7 @@ import openpyxl
 import openpyxl.styles as xlstyle
 import re
 
-from src.zsr import cache
+from .cache import ZSRCache, JsonFields
 
 logging.basicConfig(format="{asctime} [{module}:{lineno}] [{levelname}] {message}", style="{",
                     datefmt="%d/%m/%Y %H:%M:%S", level=logging.INFO)
@@ -36,14 +36,14 @@ class ZSRQuerier:
         'GLOBAL_INT_LOGMEIN'
     )
 
-    cache: cache.ZSRCache
+    cache: ZSRCache
     raw_urls: list[str]
     processed_urls: dict[str, dict[str, str]]
 
     def __init__(self, url_list: list[str] = None):
         self.raw_urls = url_list
         self.processed_urls = {}
-        self.cache = cache.ZSRCache()
+        self.cache = ZSRCache()
 
     def load_file(self, filename: str):
         """
@@ -141,8 +141,8 @@ class ZSRQuerier:
             threat: str = "" if entry["threatName"] in self.EMPTY_THREATS else entry["threatName"]
             categories: list[str] = entry["zurldblist"]
             lookup_urls[key] = {
-                cache.JsonFields.THREAT: threat,
-                cache.JsonFields.CATEGORIES: categories
+                JsonFields.THREAT: threat,
+                JsonFields.CATEGORIES: categories
             }
             self.cache.set(key, threat, categories)
 
@@ -162,8 +162,8 @@ class ZSRQuerier:
         for key, value in self.processed_urls.items():
             output.append({
                 "url": key,
-                cache.JsonFields.THREAT: value[cache.JsonFields.THREAT],
-                cache.JsonFields.CATEGORIES: value[cache.JsonFields.CATEGORIES]
+                JsonFields.THREAT: value[JsonFields.THREAT],
+                JsonFields.CATEGORIES: value[JsonFields.CATEGORIES]
             })
 
         with pandas.ExcelWriter(filename, engine="xlsxwriter") as xlwriter:
@@ -269,8 +269,8 @@ class ZSRQuerier:
                         logging.warning("Key [%s] is not found in the lookup results", index)
                         continue
 
-                    threat_name = index_dict[cache.JsonFields.THREAT]
-                    categories = index_dict[cache.JsonFields.CATEGORIES]
+                    threat_name = index_dict[JsonFields.THREAT]
+                    categories = index_dict[JsonFields.CATEGORIES]
                     prebuilt: bool = False
 
                     for cat in categories:

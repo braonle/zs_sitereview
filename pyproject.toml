@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zs_sitereview"
-version = "0.2a"
+version = "0.2b"
 authors = [
     {   name="Yaroslav Bondarenko", email="braonle@yandex.ru"   },
 ]
@@ -25,8 +25,8 @@ dependencies = [
 ]
 
 [project.urls]
-#Homepage = ""
-#Issues = ""
+Homepage = "https://github.com/braonle/zs_sitereview"
+Issues = "https://github.com/braonle/zs_sitereview/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
