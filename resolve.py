@@ -6,8 +6,8 @@ import os
 import json
 
 from datetime import datetime
-from src.lookup import ZSRQuerier
-from src.cache import DEFAULT_CACHE_FILE
+from src.zsr.lookup import ZSRQuerier
+from src.zsr.cache import DEFAULT_CACHE_FILE
 
 if __name__ == '__main__':
 

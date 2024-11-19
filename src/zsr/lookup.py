@@ -10,8 +10,7 @@ import openpyxl
 import openpyxl.styles as xlstyle
 import re
 
-from src import cache
-
+from src.zsr import cache
 
 logging.basicConfig(format="{asctime} [{module}:{lineno}] [{levelname}] {message}", style="{",
                     datefmt="%d/%m/%Y %H:%M:%S", level=logging.INFO)
@@ -172,7 +171,7 @@ class ZSRQuerier:
 
     def search_excel(self, excel: str, sheet_list: list[str]) -> None:
         """
-            Search CSE SSL spreadsheet for IPs and resolve them
+            Search CSE SSL spreadsheet for URLs and resolve them
 
             :param str excel: path to Excel spreadsheet
             :param list[str] sheet_list: worksheet names to search through
