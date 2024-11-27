@@ -55,6 +55,12 @@ ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verif
 $ (venv) export SSL_CERT_FILE="`pwd`/sitereview-zscaler-com-chain.pem"
 ```
 
+If needed, certificate can be appended to the corresponding trusted certificate store. Use the following
+to figure out the exact location:
+```shell
+$ (venv) python3 -c "import ssl; print(ssl.get_default_verify_paths())"
+```
+
 ## Options
 
 By default, the tool searches for the latest relevant file, if a corresponding parameter is provided
