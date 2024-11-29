@@ -2,3 +2,4 @@ pandas
 requests
 XlsxWriter
 openpyxl
+pip_system_certs

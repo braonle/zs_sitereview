@@ -45,10 +45,11 @@ $
 ```
 
 ## Certificate error
-API call might fail due to Zscaler certificate being untrusted by SSL backend:
+API call might fail due to Zscaler certificate being untrusted by OpenSSL backend:
 ```shell
 ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1006)
 ```
+
  In such a case you could specify the certificate to trust directly for the duration of the session 
  (can be obtained from Site Review via web browser):
 ```shell
@@ -59,6 +60,14 @@ If needed, certificate can be appended to the corresponding trusted certificate 
 to figure out the exact location:
 ```shell
 $ (venv) python3 -c "import ssl; print(ssl.get_default_verify_paths())"
+```
+
+If the error persists, append Site Review certificate to certifi trusted store file as well:
+```shell
+$ (venv) python3 -m certifi
+/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/certifi/cacert.pem
+
+$ (venv) cat sitereview-zscaler-com-chain.pem >> /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/certifi/cacert.pem
 ```
 
 ## Options
