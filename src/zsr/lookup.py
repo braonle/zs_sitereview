@@ -4,6 +4,8 @@
 """
 import logging
 import json
+import sys
+
 import requests
 import pandas
 import openpyxl
@@ -132,6 +134,11 @@ class ZSRQuerier:
 
         response = requests.post(url=self.ZURL_API, headers=headers, data=body,
                                  timeout=LOOKUP_TIMEOUT)
+
+        if response.status_code != 200:
+            logging.error("Site Review has to be accessed via ZIA, aborting")
+            sys.exit(-1)
+
         response_json = json.loads(response.text)
         response_json = json.loads(response_json["responseData"])["respMap"]
         lookup_urls: dict[str, dict[str, str | list[str]]] = {}

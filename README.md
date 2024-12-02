@@ -70,6 +70,27 @@ $ (venv) python3 -m certifi
 $ (venv) cat sitereview-zscaler-com-chain.pem >> /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/certifi/cacert.pem
 ```
 
+## JSON parsing error
+Site Review has to be accessed through ZIA, otherwise the following exception is raised due to HTTP 403 response:
+```shell
+04/11/2024 22:46:15 [resolve:81] [INFO] Resolving URLs from text file list.txt
+  File "lookup.py", line 108, in lookup_urls
+    lookup = self._lookup_batch(batch)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "lookup.py", line 133, in _lookup_batch
+    response_json = json.loads(response.text)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+```
+
 ## Options
 
 By default, the tool searches for the latest relevant file, if a corresponding parameter is provided
@@ -121,15 +142,4 @@ Changes are saved inline in the spreadsheet provided.
 04/11/2024 22:47:16 [resolve:96] [INFO] Resolving URLs from CSE SSL spreadsheet in_src.xlsx
 04/11/2024 22:47:19 [lookup:103] [INFO] cache_hits=5 | lookups=188
 04/11/2024 22:47:20 [resolve:100] [INFO] Script ran for 0:00:03.407312 seconds.
-```
-
-## Hints
-### Pre-modify IP list
-The script expects to receive one URL per line. However, in some cases the list is actually separated
-by commas. Given the size of the list, it's not feasible to modify it manually. Some automated tool
-should replace ", " with a NEWLINE symbol.
-
-Example for macOS (**\n** is a NEWLINE character, and **-i** instructs tool to perform inline replacement:
-```shell
-(venv) $ gsed -i "s/, /\n/g" list.txt
 ```
