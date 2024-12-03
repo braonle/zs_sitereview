@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zs_sitereview"
-version = "0.3"
+version = "0.4"
 authors = [
     {   name="Yaroslav Bondarenko", email="braonle@yandex.ru"   },
 ]

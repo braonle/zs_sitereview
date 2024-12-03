@@ -140,6 +140,11 @@ class ZSRQuerier:
             sys.exit(-1)
 
         response_json = json.loads(response.text)
+
+        if "MALFORMED_URL" in response_json["responseData"]:
+            logging.error("Site Review does not support IPv6 entries: %s", str(urls))
+            return {}
+
         response_json = json.loads(response_json["responseData"])["respMap"]
         lookup_urls: dict[str, dict[str, str | list[str]]] = {}
 
