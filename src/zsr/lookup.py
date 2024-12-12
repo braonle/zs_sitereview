@@ -145,7 +145,12 @@ class ZSRQuerier:
             logging.error("Site Review does not support IPv6 entries: %s", str(urls))
             return {}
 
-        response_json = json.loads(response_json["responseData"])["respMap"]
+        try:
+            response_json = json.loads(response_json["responseData"])["respMap"]
+        except KeyError as e:
+            logging.error(f"Site Review returned the following error:\n{response_json['responseData']}")
+            return {}
+
         lookup_urls: dict[str, dict[str, str | list[str]]] = {}
 
         for key in response_json.keys():
