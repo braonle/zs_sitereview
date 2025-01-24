@@ -104,7 +104,6 @@ Lookup URLs with Zscaler Site Review and mark threats
 
 options:
   -h, --help            show this help message and exit
-  --har [FILE]          HAR file name; if not specified, the latest file in folder is used
   -l [FILE], --list [FILE]
                         filename for the list of URLs; latest .txt used by default
   -c FILE, --cache FILE
