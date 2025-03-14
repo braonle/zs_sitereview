@@ -56,10 +56,12 @@ ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verif
 $ (venv) export SSL_CERT_FILE="`pwd`/sitereview-zscaler-com-chain.pem"
 ```
 
-If needed, certificate can be appended to the corresponding trusted certificate store. Use the following
-to figure out the exact location:
+If needed, certificate can be appended to the OS trusted certificate store. Use the following
+to figure out the exact location and append the certificate:
 ```shell
 $ (venv) python3 -c "import ssl; print(ssl.get_default_verify_paths())"
+$ (venv) cat sitereview-zscaler-com-chain.pem >> /usr/lib/ssl/cacert.pem
+$ (venv) pip install pip_system_certs
 ```
 
 If the error persists, append Site Review certificate to certifi trusted store file as well:
